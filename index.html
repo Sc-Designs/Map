@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <link
+    href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css"
+    rel="stylesheet"
+/>
+<style>
+    *{
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    body{
+        position: relative;
+    }
+    #map {
+        width: 100%;
+        height: 100vh;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+    #input-container{
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        width: fit-content;
+        background-color: white;
+        padding: 10px;
+        border-radius: 10px;
+    }
+    input{
+        outline: none;
+        outline: none;
+        padding: 10px;
+        border-radius: 10px;
+    }
+    button{
+        padding: 10px;
+        border-radius: 10px;
+        border: none;
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+    }
+    h1{
+        font-size: 2vw;
+        font-weight: 600;
+        text-align: center;
+    }
+    @media screen and (max-width: 768px) {
+    body{
+        position: relative;
+        width: 100%;
+        height: 100vh;
+    }
+    #map {
+        width: 100%;
+        height: 100vh;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+    #input-container{
+        position: absolute;
+        top: 67%;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+        width: fit-content;
+        background-color: white;
+        padding: 10px;
+        border-radius: 10px;
+    }
+    #input-span{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    #icon{
+        transform: rotate(90deg);
+    }
+    input{
+        outline: none;
+        outline: none;
+        padding: 10px;
+        border-radius: 10px;
+        display: block;
+        margin: 10px;
+    }
+    button{
+        padding: 10px;
+        border-radius: 10px;
+        border: none;
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+    }
+    h1{
+        font-size: 2.5vw;
+        font-weight: 600;
+        text-align: center;
+        padding-top: 10px;
+    }
+    .leaflet-routing-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 55%;
+    height: 44vw;
+    overflow-y: auto;
+    }
+    }
+</style>
+</head>
+<body>
+    <div id="input-container">
+        <h1>Where do you want to go?</h1>
+        <span id="input-span">
+            <input type="text" name="" id="start" placeholder="Start">
+            <i id="icon" class="ri-arrow-right-line"></i>
+            <input type="text" name="" id="end" placeholder="End">
+        </span>
+        <button onclick="calculateRoute()">Go</button>
+    </div>
+    <div id="map"></div>
+</body>
+</html>
+<script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+<script>
+    // Initialize the map with a default view
+    let map = L.map('map').setView([0, 0], 5); // Default to world view
+    // Add the tile layer to the map
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    // Get the input elements
+    let startInput = document.getElementById('start');
+    let endInput = document.getElementById('end');
+    // Initialize the routing control
+    let routingControl = null;
+    // Function to get user's current position
+    function getCurrentPosition() {
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                let lat = position.coords.latitude;
+                let lon = position.coords.longitude;
+                startInput.value = lat + ',' + lon;
+            }, function(error) {
+                console.error("Error getting location: ", error);
+            });
+        } else {
+            console.error("Geolocation is not supported by this browser.");
+        }
+    }
+    // Update user's position every 10 seconds
+    setInterval(getCurrentPosition, 10000);
+    function calculateRoute() {
+        // Remove previous routing control if it exists
+        if (routingControl) {
+            map.removeControl(routingControl);
+        }
+
+        let start = startInput.value;
+        let end = endInput.value;
+
+        // Check if start and end are not empty
+        if (start && end) {
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(start.split(',')),
+                    L.latLng(end.split(','))
+                ],
+                routeWhileDragging: false,
+                draggableWaypoints: false
+            }).addTo(map);
+        } else {
+            alert('Please enter both start and end locations');
+        }
+    }
+    // Initial call to set the start position
+    getCurrentPosition();
+    </script>
